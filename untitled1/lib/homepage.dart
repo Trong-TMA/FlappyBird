@@ -1,8 +1,13 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:untitled1/barrier.dart';
+import 'package:untitled1/models/Highscore.dart';
 import 'package:untitled1/bird.dart';
+import 'package:untitled1/models/Highscore.dart';
+import 'package:untitled1/models/api.services.dart';
+import 'package:untitled1/models/api.services.dart';
 
 
 class HomePage extends StatefulWidget {
@@ -14,7 +19,7 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   int score = 0;
-  int highscore = 0;
+  Highscore highscore = new Highscore();
   static double birdY= 0;
   double initialPos = birdY;
   double height = 0;
@@ -40,7 +45,10 @@ class _HomePageState extends State<HomePage> {
   bool gameHasStarted = false;
 
 
+
+
   void startGame(){
+      getHighScore();
       gameHasStarted = true;
       Timer.periodic(const Duration(milliseconds: 50), (timer){
         height = gravity * time * time + velocity * time;
@@ -121,7 +129,7 @@ class _HomePageState extends State<HomePage> {
           backgroundColor: Colors.brown,
           title: Center(
             child: Text(
-              "GMAE OVER",
+              "GAME OVER",
               style: TextStyle(color: Colors.white),
             ),
           ),
@@ -181,13 +189,19 @@ class _HomePageState extends State<HomePage> {
     });
 
   }
+
   void getHighScore(){
-    if(score > highscore){
-      setState(() {
-        highscore = score;
-      });
-    }
+    APIServices.getData().then((response){
+        //Iterable highScore = json.decode(response.body);
+        Map<String, dynamic> highScore = jsonDecode(response);
+        var score = highScore['highestScore'];
+        print(score);
+        setState(() {
+          highscore = score as Highscore;
+        });
+    });
   }
+
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
@@ -280,11 +294,14 @@ class _HomePageState extends State<HomePage> {
                           Column(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
+
                                 Text("BEST", style: TextStyle(color: Colors.white, fontSize: 20)),
                                 SizedBox(
                                   height: 20,
                                 ),
-                                Text(highscore.toString(), style: TextStyle(color: Colors.white, fontSize: 35))]
+                                Text(highscore.getHighcore.toString(), style: TextStyle(color: Colors.white, fontSize: 35))]
+
+
                           )
                         ]
                     )
@@ -294,6 +311,5 @@ class _HomePageState extends State<HomePage> {
         ),
       ),
     ) ;
-
   }
 }
